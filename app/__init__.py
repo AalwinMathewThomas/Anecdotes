@@ -1,26 +1,37 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager
+from app.schema import db, User  
+import os
 
-db = SQLAlchemy()
+login_manager = LoginManager()
 
 def create_app():
-    app = Flask(__name__)
-    
+    base_dir = os.path.abspath(os.path.dirname(__file__))  # path to "app/"
+    template_dir = os.path.join(base_dir, "..", "templates") 
 
-    app.config['SECRET_KEY'] = '490f5b3a23c26ce4d4457c046abc58d2'
+    app = Flask(__name__,template_folder=template_dir)
+
+    app.config['SECRET_KEY'] = 'df950b388400d919d9b673c5b42605bd923fd3e0703dae13d0dbbef06c2522e8'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///anecdotes.db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+
     db.init_app(app)
+    login_manager.init_app(app)
+    login_manager.login_view = "auth.login"  
 
 
-    from app.schema import User, Story, Favorite, Progress
+    @login_manager.user_loader
+    def load_user(user_id):
+        return User.query.get(int(user_id))
+
+
+    from app.routes import auth_bp
+    app.register_blueprint(auth_bp)
+
 
     with app.app_context():
         db.create_all()
-
-    @app.route('/')
-    def home():
-        return 'Welcome to Anecdotes!'
 
     return app
