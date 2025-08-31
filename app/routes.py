@@ -1,16 +1,15 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, login_required, current_user
-from app.schema import db, User
+from app.schema import db, User,Story
 
 auth_bp = Blueprint("auth", __name__)
 
 @auth_bp.route("/")
 def home():
+    featured = Story.query.filter_by(is_featured=True).first()
     if current_user.is_authenticated:
-        return f"Welcome, {current_user.username}! <a href='{url_for('auth.logout')}'>Logout</a>"
-    return 'Welcome to Anecdotes! <a href="{0}">Login</a> | <a href="{1}">Register</a>'.format(
-        url_for("auth.login"), url_for("auth.register")
-    )
+        return render_template("home.html", username=current_user.username, featured=featured)
+    return render_template("home.html", featured=featured)
 
 @auth_bp.route("/register", methods=["GET", "POST"])
 def register():
@@ -59,3 +58,26 @@ def logout():
     logout_user()
     flash("Logged out successfully!", "success")
     return redirect(url_for("auth.home"))
+
+
+
+@auth_bp.route("/upload",methods=["GET","POST"])
+@login_required
+def upload():
+    if request.method=="POST":
+        title=request.form.get("title","").strip()
+        content=request.form.get("content","").strip()
+        if not title or content:
+            flash("Title and Content are required","error")
+            return redirect(url_for("auth.upload"))
+        story = Story(title=title,content=content,author_id=current_user.id)
+        db.session.add(story)
+        db.session.commit()
+        flash("Story uploaded sucessfully!","sucess")
+        return redirect(url_for("auth.home"))
+    return render_template("upload.html")
+
+
+
+
+
