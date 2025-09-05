@@ -1,8 +1,13 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, login_required, current_user
 from app.schema import db, User,Story
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired
+from flask_mail import Mail, Message
+from datetime import datetime, timedelta,timezone
+import random
 
 auth_bp = Blueprint("auth", __name__)
+mail = Mail()
 
 @auth_bp.route("/")
 def home():
@@ -15,6 +20,7 @@ def home():
 def register():
     if request.method == "POST":
         username = request.form.get("username", "").strip()
+        email = request.form.get("email",'').strip()
         password = request.form.get("password", "")
 
         if not username or not password:
@@ -24,8 +30,11 @@ def register():
         if User.query.filter_by(username=username).first():
             flash("Username already taken.", "error")
             return redirect(url_for("auth.register"))
+        if User.query.filter_by(email=email).first():
+            flash("Email already taken.","error")
+            return redirect(url_for("auth.register"))
 
-        user = User(username=username)
+        user = User(username=username,email=email)
         user.set_password(password)
         db.session.add(user)
         db.session.commit()
@@ -67,10 +76,11 @@ def upload():
     if request.method=="POST":
         title=request.form.get("title","").strip()
         content=request.form.get("content","").strip()
-        if not title or content:
+        is_public = "is_public" in request.form
+        if not title or not content:
             flash("Title and Content are required","error")
             return redirect(url_for("auth.upload"))
-        story = Story(title=title,content=content,author_id=current_user.id)
+        story = Story(title=title,content=content,author_id=current_user.id,is_public=is_public)
         db.session.add(story)
         db.session.commit()
         flash("Story uploaded sucessfully!","sucess")
@@ -78,6 +88,65 @@ def upload():
     return render_template("upload.html")
 
 
+@auth_bp.route("/reset_request",methods=["GET","POST"])
+def reset_request():
+    if request.method=="POST":
+        username = request.form.get("username")
+        user = User.query.filter_by(username=username).first()
+        if not user:
+            flash("No user found with that username.","error")
+            return redirect(url_for("auth.reset_request"))
+        otp=f"{random.randint(100000,999999)}"
+        print(f"OTP for {username}:{otp}")
+        user.otp=otp
+        user.otp_expires=datetime.now(timezone.utc)+timedelta(minutes=10)
+        db.session.commit()
+        msg = Message("Password Reset OTP", sender="noreply@anecdotes.com", recipients=[user.email])
+        msg.body=f"Your OTP for reseting your password is {otp}.It expires in 10 minutes"
+        mail.send(msg)
+        flash("OTP sent your mail","success")
+
+    return render_template("reset_request.html")
+
+
+@auth_bp.route("/reset_password",methods=["GET","POST"])
+def reset_password(username):
+    user = User.query.filter(username=username).first()
+    if not user:
+        flash("Invalid user.","error")
+        return redirect(url_for("auth.reset_request.html"))
+    if request.method=="POST":
+        otp=request.form.get("otp")
+        password=request.form.get("password")
+        if user.otp!=otp or user.otp_expires<datetime.now(timezone.utc):
+            flash("Invalid or expired OTP.","error")
+            return redirect(url_for("auth.reset_request"))
+        user.set_password(password)
+        user.otp =None
+        user.otp_expires=None
+        db.session.commit()
+        flash("Password reset successfully.","success")
+        return redirect(url_for("auth.login"))
+    return render_template("reset_password.html",username=username)
+
+@auth_bp.route('/stories')
+def stories():
+    all_stories = Story.query.all()
+    user_stories = Story.query.filter_by(author_id=current_user.id).all() if current_user.is_authenticated else []
+    return render_template('stories.html', all_stories=all_stories, user_stories=user_stories, username=current_user.username if current_user.is_authenticated else None)
+
+        
+@auth_bp.route("/delete_story/<int:story_id>",methods=["GET","POST"])
+@login_required
+def delete_story(story_id):
+    story = Story.query.get_or_404(story_id)
+    if story.author_id != current_user.id:
+        flash('You can only delete your own stories.', 'error')
+        return redirect(url_for('auth.stories'))
+    db.session.delete(story)
+    db.session.commit()
+    flash('Story deleted successfully.', 'success')
+    return redirect(url_for('auth.stories'))   
 
 
 
