@@ -23,8 +23,8 @@ def register():
         email = request.form.get("email",'').strip()
         password = request.form.get("password", "")
 
-        if not username or not password:
-            flash("Username and password are required.", "error")
+        if not username or not password or not email:
+            flash("Username, email and password are required.", "error")
             return redirect(url_for("auth.register"))
 
         if User.query.filter_by(username=username).first():
@@ -83,7 +83,7 @@ def upload():
         story = Story(title=title,content=content,author_id=current_user.id,is_public=is_public)
         db.session.add(story)
         db.session.commit()
-        flash("Story uploaded sucessfully!","sucess")
+        flash("Story uploaded sucessfully!","success")
         return redirect(url_for("auth.home"))
     return render_template("upload.html")
 
@@ -97,28 +97,29 @@ def reset_request():
             flash("No user found with that username.","error")
             return redirect(url_for("auth.reset_request"))
         otp=f"{random.randint(100000,999999)}"
-        print(f"OTP for {username}:{otp}")
         user.otp=otp
-        user.otp_expires=datetime.now(timezone.utc)+timedelta(minutes=10)
+        user.otp_expires = datetime.now(timezone.utc) + timedelta(minutes=30)
         db.session.commit()
-        msg = Message("Password Reset OTP", sender="noreply@anecdotes.com", recipients=[user.email])
-        msg.body=f"Your OTP for reseting your password is {otp}.It expires in 10 minutes"
+        print(f"OTP: {otp}, Expires: {user.otp_expires}")
+        msg = Message("Password Reset OTP", recipients=[user.email])
+        msg.body = f"Your OTP for resetting your password is {otp}. It expires in 10 minutes."
         mail.send(msg)
-        flash("OTP sent your mail","success")
-
+        flash("OTP sent to your email.", "success")
+        return redirect(url_for("auth.reset_password", username=username))
     return render_template("reset_request.html")
 
 
-@auth_bp.route("/reset_password",methods=["GET","POST"])
+@auth_bp.route("/reset_password/<username>",methods=["GET","POST"])
 def reset_password(username):
-    user = User.query.filter(username=username).first()
+    user = User.query.filter_by(username=username).first()
     if not user:
         flash("Invalid user.","error")
-        return redirect(url_for("auth.reset_request.html"))
+        return redirect(url_for("auth.reset_request"))
     if request.method=="POST":
         otp=request.form.get("otp")
         password=request.form.get("password")
-        if user.otp!=otp or user.otp_expires<datetime.now(timezone.utc):
+        print(f"Checking OTP: {otp}, Expires: {user.otp_expires}, Now: {datetime.now(timezone.utc).replace(tzinfo=None)}")
+        if user.otp!=otp or user.otp_expires<datetime.now(timezone.utc).replace(tzinfo=None):
             flash("Invalid or expired OTP.","error")
             return redirect(url_for("auth.reset_request"))
         user.set_password(password)
@@ -136,7 +137,7 @@ def stories():
     return render_template('stories.html', all_stories=all_stories, user_stories=user_stories, username=current_user.username if current_user.is_authenticated else None)
 
         
-@auth_bp.route("/delete_story/<int:story_id>",methods=["GET","POST"])
+@auth_bp.route("/delete_story/<int:story_id>",methods=["POST"])
 @login_required
 def delete_story(story_id):
     story = Story.query.get_or_404(story_id)
