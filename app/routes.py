@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, login_required, current_user
-from app.schema import db, User,Story
+from app.schema import db, User,Story,Favorite
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired
 from flask_mail import Mail, Message
 from datetime import datetime, timedelta,timezone
@@ -133,21 +133,40 @@ def reset_password(username):
 @auth_bp.route('/stories')
 def stories():
     all_stories = Story.query.all()
-    user_stories = Story.query.filter_by(author_id=current_user.id).all() if current_user.is_authenticated else []
+    user_stories = Story.query.filter_by(author_id=current_user.id).all() if current_user.is_authenticated else [] 
+    favorite_ids = [f.story_id for f in Favorite.query.filter_by(user_id=current_user.id).all()] if current_user.is_authenticated else []
     return render_template('stories.html', all_stories=all_stories, user_stories=user_stories, username=current_user.username if current_user.is_authenticated else None)
 
         
-@auth_bp.route("/delete_story/<int:story_id>",methods=["POST"])
+@auth_bp.route('/delete_story/<int:story_id>', methods=['POST'])
 @login_required
 def delete_story(story_id):
     story = Story.query.get_or_404(story_id)
     if story.author_id != current_user.id:
         flash('You can only delete your own stories.', 'error')
         return redirect(url_for('auth.stories'))
+    Favorite.query.filter_by(story_id=story_id).delete()
     db.session.delete(story)
     db.session.commit()
     flash('Story deleted successfully.', 'success')
-    return redirect(url_for('auth.stories'))   
+    return redirect(url_for('auth.stories'))
 
 
+@auth_bp.route('/favorites')
+@login_required
+def favorites():
+    favorites = Favorite.query.filter_by(user_id=current_user.id).all()
+    return render_template('favorites.html', favorites=favorites)
 
+@auth_bp.route('/story/<int:story_id>/favorite', methods=['POST'])
+@login_required
+def favorite_story(story_id):
+    story = Story.query.get_or_404(story_id)
+    if Favorite.query.filter_by(user_id=current_user.id, story_id=story_id).first():
+        flash('You already favorited this story.', 'info')
+    else:
+        favorite = Favorite(user_id=current_user.id, story_id=story_id)
+        db.session.add(favorite)
+        db.session.commit()
+        flash('Story added to favorites!', 'success')
+    return redirect(url_for('auth.stories'))

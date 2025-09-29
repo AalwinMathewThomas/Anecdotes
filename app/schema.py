@@ -35,7 +35,8 @@ class Story(db.Model):
 class Favorite(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer,db.ForeignKey('user.id'),nullable=False)
-    story_id = db.Column(db.Integer, db.ForeignKey('story.id'), nullable=False)
+    story_id = db.Column(db.Integer, db.ForeignKey('story.id', ondelete='CASCADE'), nullable=False)
+    story = db.relationship('Story', backref='favorited_by', lazy=True)
 
 class Progress(db.Model):
     id = db.Column(db.Integer,primary_key=True)

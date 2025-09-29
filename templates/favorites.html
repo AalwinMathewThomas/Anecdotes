@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Favorites - Anecdotes</title>
+</head>
+<body>
+    <h1>My Favorites</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <ul>
+                {% for category, message in messages %}
+                    <li class="{{ category }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+    {% if favorites %}
+        <ul>
+            {% for favorite in favorites %}
+                {% if favorite.story %}
+                    <li>
+                        <h3>{{ favorite.story.title }} by {{ favorite.story.author.username }}</h3>
+                        <p>{{ favorite.story.content[:100] }}...</p>
+                        <a href="{{ url_for('auth.stories') }}">Back to Stories</a>
+                    </li>
+                {% else %}
+                    <li>
+                        <p>Story no longer available (ID: {{ favorite.story_id }})</p>
+                    </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No favorite stories yet.</p>
+    {% endif %}
+    <p><a href="{{ url_for('auth.stories') }}">All Stories</a> | <a href="{{ url_for('auth.home') }}">Home</a></p>
+</body>
+</html>

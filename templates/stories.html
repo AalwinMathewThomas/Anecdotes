@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Stories - Anecdotes</title>
+    <title>All Stories - Anecdotes</title>
 </head>
 <body>
-    <h2>All Stories</h2>
+    <h1>All Stories</h1>
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             <ul>
@@ -17,9 +17,17 @@
     <ul>
         {% for story in all_stories %}
             {% if story.is_public or story.author_id == current_user.id %}
-                <li>{{ story.title }} by {{ story.author.username }}
+                <li>
+                    <h3>{{ story.title }} by {{ story.author.username }}</h3>
+                    {% if current_user.is_authenticated and story.id not in favorite_ids %}
+                        <form method="POST" action="{{ url_for('auth.favorite_story', story_id=story.id) }}">
+                            <button type="submit">Favorite</button>
+                        </form>
+                    {% elif current_user.is_authenticated %}
+                        <p>Already favorited</p>
+                    {% endif %}
                     {% if story.author_id == current_user.id %}
-                        <form action="{{ url_for('auth.delete_story', story_id=story.id) }}" method="POST" style="display:inline;">
+                        <form method="POST" action="{{ url_for('auth.delete_story', story_id=story.id) }}">
                             <button type="submit">Delete</button>
                         </form>
                     {% endif %}
@@ -31,8 +39,16 @@
         <h2>Your Stories</h2>
         <ul>
             {% for story in user_stories %}
-                <li>{{ story.title }} ({{ 'Public' if story.is_public else 'Private' }})
-                    <form action="{{ url_for('auth.delete_story', story_id=story.id) }}" method="POST" style="display:inline;">
+                <li>
+                    <h3>{{ story.title }} ({{ 'Public' if story.is_public else 'Private' }})</h3>
+                    {% if current_user.is_authenticated and story.id not in favorite_ids %}
+                        <form method="POST" action="{{ url_for('auth.favorite_story', story_id=story.id) }}">
+                            <button type="submit">Favorite</button>
+                        </form>
+                    {% elif current_user.is_authenticated %}
+                        <p>Already favorited</p>
+                    {% endif %}
+                    <form method="POST" action="{{ url_for('auth.delete_story', story_id=story.id) }}">
                         <button type="submit">Delete</button>
                     </form>
                 </li>

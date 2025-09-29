@@ -1,24 +1,38 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Anecdotes</title>
+    <title>Welcome to Anecdotes</title>
 </head>
 <body>
-    <h2>Welcome to Anecdotes!</h2>
+    <h1>Welcome to Anecdotes!</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <ul>
+                {% for category, message in messages %}
+                    <li class="{{ category }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
     {% if username %}
-        <p>Welcome, {{ username }}! 
-           <a href="{{ url_for('auth.logout') }}">Logout</a> | 
-           <a href="{{ url_for('auth.upload') }}">Upload Story</a>
+        <p>Welcome, {{ username }}!</p>
+        <p>
+            <a href="{{ url_for('auth.upload') }}">Upload a Story</a> |
+            <a href="{{ url_for('auth.stories') }}">View Stories</a> |
+            <a href="{{ url_for('auth.favorites') }}">Favorites</a> |
+            <a href="{{ url_for('auth.logout') }}">Logout</a>
         </p>
     {% else %}
         <p>
-           <a href="{{ url_for('auth.login') }}">Login</a> | 
-           <a href="{{ url_for('auth.register') }}">Register</a>
+            <a href="{{ url_for('auth.login') }}">Login</a> |
+            <a href="{{ url_for('auth.register') }}">Register</a> |
+            <a href="{{ url_for('auth.stories') }}">View Stories</a>
         </p>
     {% endif %}
     {% if featured %}
-        <h3>Featured Story: {{ featured.title }}</h3>
-        <p>{{ featured.content[:200] }}...</p>
+        <h2>Featured Story</h2>
+        <h3>{{ featured.title }} by {{ featured.author.username }}</h3>
+        <p>{{ featured.content }}</p>
     {% endif %}
 </body>
 </html>
