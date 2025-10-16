@@ -423,3 +423,8 @@ def my_stories():
     return render_template('my_stories.html', stories=stories.items, page=page, search_query=search_query,
                           prev_page=stories.has_prev, next_page=stories.has_next, liked_ids=liked_ids,
                           favorite_ids=favorite_ids, username=current_user.username)
+
+
+@auth_bp.route('/tos')
+def tos():
+    return render_template('tos.html')
