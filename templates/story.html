@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}{{ story.title }}{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-body">
+            <h2 class="card-title text-center mb-3">{{ story.title }}</h2>
+            <p class="text-center text-muted mb-3">
+                By {{ story.author.username if story.author else 'Unknown' }} • {{ story.likes | length }} {{ 'Like' if story.likes | length == 1 else 'Likes' }}
+            </p>
+
+            <div class="content-text" id="story-content" style="max-height: 70vh; overflow-y: auto;">
+                {{ story.content | replace('\n', '<br>') | safe }}
+            </div>
+        </div>
+    </div>
+
+    {% if username %}
+        <!-- Sticky Save Progress Button (Bottom Right) -->
+        <form method="POST" action="{{ url_for('auth.story', story_id=story.id) }}" id="progress-form" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
+            <input type="hidden" name="position" id="position" value="{{ position }}">
+            <button type="submit" class="btn btn-primary btn-sm" id="save-progress-btn">Save Progress</button>
+        </form>
+
+        <!-- Sticky Favorite Button (Bottom Right, above Save Progress) -->
+        <form method="POST" action="{{ url_for('auth.favorite_story', story_id=story.id) }}" style="position: fixed; bottom: 60px; right: 20px; z-index: 1000;" class="favorite-form" data-story-id="{{ story.id }}">
+            <button type="submit" class="btn btn-{{ 'danger' if story.id in favorite_ids else 'success' }} btn-sm favorite-btn">
+                {{ 'Unfavorite' if story.id in favorite_ids else 'Favorite' }}
+            </button>
+        </form>
+
+        <!-- Sticky Back to Stories Button (Bottom Center) -->
+        <a href="{{ url_for('auth.stories') }}" style="position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 1000;" class="btn btn-secondary btn-sm">
+            Back to Stories
+        </a>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const content = document.getElementById('story-content');
+                const positionInput = document.getElementById('position');
+                const saveButton = document.getElementById('save-progress-btn');
+
+                if (!content) {
+                    console.error('story-content element not found');
+                    return;
+                }
+                console.log('Content scrollable:', content.scrollHeight > content.clientHeight); // Debug scrollability
+
+                // Restore scroll position
+                content.scrollTop = {{ position }};
+
+                // Update position on scroll
+                content.addEventListener('scroll', () => {
+                    positionInput.value = content.scrollTop;
+                    console.log('Scroll position updated to:', content.scrollTop); // Debug
+                });
+
+                // Handle save button click with immediate capture
+                saveButton.addEventListener('click', (e) => {
+                    e.preventDefault(); // Prevent default
+                    const currentPosition = content.scrollTop || 0; // Capture at click time
+                    positionInput.value = currentPosition; // Set immediately
+                    console.log('Submitting position:', currentPosition); // Debug
+                    document.getElementById('progress-form').submit(); // Submit
+                });
+
+                // Restore scroll after load
+                window.addEventListener('load', () => {
+                    content.scrollTop = {{ position }}; // Reapply saved position
+                });
+
+                document.querySelectorAll('.favorite-form').forEach(form => {
+                    form.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const btn = form.querySelector('.favorite-btn');
+                        const isFavorited = btn.classList.contains('btn-danger');
+                        try {
+                            const response = await fetch(form.action, { method: 'POST' });
+                            if (response.ok) {
+                                btn.classList.toggle('btn-danger');
+                                btn.classList.toggle('btn-success');
+                                btn.textContent = isFavorited ? 'Favorite' : 'Unfavorite';
+                            } else alert('Error toggling favorite status.');
+                        } catch (error) {
+                            alert('Network error: ' + error.message);
+                        }
+                    });
+                });
+            });
+        </script>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Books{% endblock %}
+{% block content %}
+    <div class="container">
+        <h2>Books</h2>
+        <form class="mb-4" method="GET" action="{{ url_for('auth.books') }}">
+            <div class="input-group">
+                <input type="text" class="form-control" name="search" placeholder="Search books..." value="{{ search_query or '' }}">
+                <button type="submit" class="btn btn-primary">Search</button>
+            </div>
+        </form>
+        <div class="row">
+            {% for book in books %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <img src="{{ book.image_url }}" class="card-img-top" alt="{{ book.title }} cover" style="height: 200px; object-fit: cover;">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ book.title }}</h5>
+                            {% if book.authors %}
+                                {% if book.authors is mapping %}
+                                    {% set author = book.authors %}
+                                    {% set name_parts = author.name.split(', ') if author.name else ['Unknown'] %}
+                                    {% set full_name = name_parts[1] + ' ' + name_parts[0] if name_parts|length > 1 else author.name|default('Unknown') %}
+                                    {% set years = (author.birth_year ~ '–' ~ author.death_year) if author.birth_year and author.death_year else (author.birth_year if author.birth_year else 'Unknown') %}
+                                    <p class="card-text">By {{ full_name }} ({{ years }})</p>
+                                {% else %}
+                                    {% for author in book.authors %}
+                                        {% set name_parts = author.name.split(', ') if author.name else ['Unknown'] %}
+                                        {% set full_name = name_parts[1] + ' ' + name_parts[0] if name_parts|length > 1 else author.name|default('Unknown') %}
+                                        {% set years = (author.birth_year ~ '–' ~ author.death_year) if author.birth_year and author.death_year else (author.birth_year if author.birth_year else 'Unknown') %}
+                                        <p class="card-text">By {{ full_name }} ({{ years }})</p>
+                                    {% endfor %}
+                                {% endif %}
+                            {% else %}
+                                <p class="card-text">By Unknown</p>
+                            {% endif %}
+                            {% if username %}
+                                <form method="POST" action="{{ url_for('auth.favorite_book', book_id=book.id) }}" style="display:inline;">
+                                    <button type="submit" class="btn btn-{{ 'danger' if book.is_favorited else 'success' }} btn-sm">
+                                        {{ 'Unfavorite' if book.is_favorited else 'Favorite' }}
+                                    </button>
+                                </form>
+                            {% endif %}
+                            <a href="{{ url_for('auth.book', book_id=book.id) }}" class="btn btn-primary btn-sm">Read</a>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <p>No books found.</p>
+            {% endfor %}
+        </div>
+        <div class="mt-4 d-flex align-items-center">
+            {% if prev_page %}
+                <a href="{{ url_for('auth.books', page=page-1, search=search_query) }}" class="btn btn-outline-secondary me-2">Previous</a>
+            {% endif %}
+            <span class="me-2">Page {{ page }} of {{ total_pages }}</span>
+            {% if next_page %}
+                <a href="{{ url_for('auth.books', page=page+1, search=search_query) }}" class="btn btn-outline-secondary">Next</a>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

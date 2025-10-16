@@ -1,11 +1,11 @@
 {% extends "base.html" %}
-{% block title %}Stories{% endblock %}
+{% block title %}My Stories{% endblock %}
 {% block content %}
     <div class="container">
-        <h2>Stories</h2>
-        <form class="mb-4" method="GET" action="{{ url_for('auth.stories') }}">
+        <h2>My Stories</h2>
+        <form class="mb-4" method="GET" action="{{ url_for('auth.my_stories') }}">
             <div class="input-group">
-                <input type="text" class="form-control" name="search" placeholder="Search stories..." value="{{ search_query or '' }}">
+                <input type="text" class="form-control" name="search" placeholder="Search my stories..." value="{{ search_query or '' }}">
                 <button type="submit" class="btn btn-primary">Search</button>
             </div>
         </form>
@@ -15,7 +15,7 @@
                     <div class="card h-100">
                         <div class="card-body">
                             <h5 class="card-title">{{ story.title }}</h5>
-                            <p class="card-text">By {{ story.author.username }}</p>
+                            <p class="card-text">Visibility: {{ 'Public' if story.is_public else 'Private' }}</p>
                             <p class="card-text">{{ story.likes | length }} {{ 'Like' if story.likes | length == 1 else 'Likes' }}</p>
                             {% if username %}
                                 <form method="POST" action="{{ url_for('auth.like_story', story_id=story.id) }}" style="display:inline;">
@@ -29,11 +29,9 @@
                                         {{ 'Unfavorite' if story.id in favorite_ids else 'Favorite' }}
                                     </button>
                                 </form>
-                                {% if current_user.id == story.author_id %}
-                                    <form method="POST" action="{{ url_for('auth.delete_story', story_id=story.id) }}" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this story?');">
-                                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                                    </form>
-                                {% endif %}
+                                <form method="POST" action="{{ url_for('auth.delete_story', story_id=story.id) }}" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this story?');">
+                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                </form>
                             {% else %}
                                 <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary btn-sm me-2">Log in to like</a>
                                 <a href="{{ url_for('auth.login') }}" class="btn btn-success btn-sm me-2">Log in to favorite</a>
@@ -48,10 +46,10 @@
         </div>
         <div class="mt-4">
             {% if prev_page %}
-                <a href="{{ url_for('auth.stories', page=page-1, search=search_query) }}" class="btn btn-outline-secondary me-2">Previous</a>
+                <a href="{{ url_for('auth.my_stories', page=page-1, search=search_query) }}" class="btn btn-outline-secondary me-2">Previous</a>
             {% endif %}
             {% if next_page %}
-                <a href="{{ url_for('auth.stories', page=page+1, search=search_query) }}" class="btn btn-outline-secondary">Next</a>
+                <a href="{{ url_for('auth.my_stories', page=page+1, search=search_query) }}" class="btn btn-outline-secondary">Next</a>
             {% endif %}
         </div>
     </div>

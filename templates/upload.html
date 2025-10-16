@@ -1,25 +1,47 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Upload Story - Anecdotes</title>
-</head>
-<body>
-    <h2>Upload Story</h2>
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <ul>
-                {% for category, message in messages %}
-                    <li class="{{ category }}">{{ message }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
-    <form method="POST">
-        <label>Title: <input type="text" name="title" required></label><br>
-        <label>Content: <textarea name="content" required></textarea></label><br>
-        <label>Make Public: <input type="checkbox" name="is_public" checked></label><br>
-        <button type="submit">Upload</button>
-    </form>
-    <p><a href="{{ url_for('auth.home') }}">Back to Home</a></p>
-</body>
-</html>
+{% extends "base.html" %}
+{% block title %}Upload Story{% endblock %}
+{% block content %}
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <h2>Upload a Story</h2>
+            <form method="POST" action="{{ url_for('auth.upload') }}" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label for="title" class="form-label">Title</label>
+                    <input type="text" class="form-control" id="title" name="title" required>
+                </div>
+                <div class="mb-3">
+                    <button type="button" class="btn btn-outline-primary me-2" onclick="showContentInput()">Write Content</button>
+                    <button type="button" class="btn btn-outline-primary" onclick="showFileInput()">Upload File</button>
+                </div>
+                <div class="mb-3" id="content-input" style="display: none;">
+                    <label for="content" class="form-label">Story Content</label>
+                    <textarea class="form-control" id="content" name="content" rows="10"></textarea>
+                </div>
+                <div class="mb-3" id="file-input" style="display: none;">
+                    <label for="file" class="form-label">Story File (Text)</label>
+                    <input type="file" class="form-control" id="file" name="file" accept=".txt">
+                </div>
+                <div class="mb-3">
+                    <label for="visibility" class="form-label">Visibility</label>
+                    <select class="form-select" id="visibility" name="visibility">
+                        <option value="public">Public</option>
+                        <option value="private">Private</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Upload</button>
+            </form>
+        </div>
+    </div>
+    <script>
+        function showContentInput() {
+            document.getElementById('content-input').style.display = 'block';
+            document.getElementById('file-input').style.display = 'none';
+            document.getElementById('file').value = '';
+        }
+        function showFileInput() {
+            document.getElementById('file-input').style.display = 'block';
+            document.getElementById('content-input').style.display = 'none';
+            document.getElementById('content').value = '';
+        }
+    </script>
+{% endblock %}

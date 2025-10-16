@@ -1,0 +1,158 @@
+
+:root {
+  --bg-color: #f8f4ef;
+  --text-color: #3c2f2f;
+  --primary-color: #c97b63;
+  --secondary-color: #d9b08c;
+  --accent-color: #f5b971;
+  --card-bg: #fff8f2;
+  --navbar-bg: #f5d9b1;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: "Poppins", "Segoe UI", Arial, sans-serif;
+}
+
+.navbar {
+  background-color: var(--navbar-bg) !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+
+.card {
+  background-color: var(--card-bg);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+  padding-bottom: 10px;
+}
+
+.card-title {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+
+.btn {
+  box-shadow: none !important;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 0.9rem;
+  margin-right: 6px;
+  margin-top: 6px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.btn-outline-primary {
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--primary-color);
+  color: #fff;
+}
+
+.btn-success {
+  background-color: #70d870;
+  border: none;
+  color: #fff;
+}
+
+.btn-danger {
+  background-color: #ff6b6b;
+  border: none;
+  color: #fff;
+}
+
+.card-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.card-body form,
+.card-body a.btn {
+  display: inline-block;
+  margin-top: 5px;
+}
+
+.content-text {
+  line-height: 1.7;
+  font-family: "Georgia", serif;
+  font-size: 1.1em;
+  background: #fff;
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 10px;
+}
+/* === Global Background === */
+/* === Background with subtle dark overlay === */
+body {
+    position: relative;
+    background: url("../static/background.jpg") no-repeat center center fixed;
+    background-size: cover;
+    font-family: 'Georgia', serif;
+    color: #f8f8f8; /* light text for contrast */
+    margin: 0;
+    padding: 0;
+}
+
+/* overlay layer */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.45); /* translucent dark overlay */
+    z-index: -1; /* keeps it behind everything */
+}
+
+/* === Card Design === */
+.card {
+    background-color: rgba(255, 255, 255, 0.93);
+    border-radius: 12px;
+    padding: 1rem;
+    color: #2c2c2c; /* dark text inside cards */
+    border: none;
+}
+
+/* === Navbar === */
+/* .navbar {
+    background-color: rgba(255, 255, 255, 0.9) !important; 
+} */
+
+/* === Buttons === */
+.btn-primary, .btn-success, .btn-outline-primary {
+    background-color: #a97449;
+    border-color: #a97449;
+    color: white !important;
+}
+
+.btn-primary:hover, .btn-success:hover, .btn-outline-primary:hover {
+    background-color: #c28656;
+    border-color: #c28656;
+    color: white !important;
+}
+
+/* fix spacing between buttons */
+.btn {
+    margin: 4px 5px;
+}
+
+/* === Flash messages === */
+.flash-success {
+    color: #28a745;
+}
+.flash-error {
+    color: #dc3545;
+}

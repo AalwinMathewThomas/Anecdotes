@@ -1,38 +1,28 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Welcome to Anecdotes</title>
-</head>
-<body>
-    <h1>Welcome to Anecdotes!</h1>
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <ul>
-                {% for category, message in messages %}
-                    <li class="{{ category }}">{{ message }}</li>
-                {% endfor %}
-            </ul>
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+    <div class="container text-center">
+        <h1 class="mt-5">Welcome to Anecdotes{% if username %}, {{ username }}{% endif %}!</h1>
+        <p class="lead">Explore user stories or browse classic books.</p>
+        {% if featured %}
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h3 class="card-title">Featured Story: {{ featured.title }}</h3>
+                    <p class="card-text">By {{ featured.author.username }} ({{ featured.likes | length }} {{ 'Like' if featured.likes | length == 1 else 'Likes' }})</p>
+                    <a href="{{ url_for('auth.story', story_id=featured.id) }}" class="btn btn-primary">Read Now</a>
+                </div>
+            </div>
+        {% else %}
+            <p class="mt-4 text-muted">No stories available yet. Be the first to share one!</p>
         {% endif %}
-    {% endwith %}
-    {% if username %}
-        <p>Welcome, {{ username }}!</p>
-        <p>
-            <a href="{{ url_for('auth.upload') }}">Upload a Story</a> |
-            <a href="{{ url_for('auth.stories') }}">View Stories</a> |
-            <a href="{{ url_for('auth.favorites') }}">Favorites</a> |
-            <a href="{{ url_for('auth.logout') }}">Logout</a>
-        </p>
-    {% else %}
-        <p>
-            <a href="{{ url_for('auth.login') }}">Login</a> |
-            <a href="{{ url_for('auth.register') }}">Register</a> |
-            <a href="{{ url_for('auth.stories') }}">View Stories</a>
-        </p>
-    {% endif %}
-    {% if featured %}
-        <h2>Featured Story</h2>
-        <h3>{{ featured.title }} by {{ featured.author.username }}</h3>
-        <p>{{ featured.content }}</p>
-    {% endif %}
-</body>
-</html>
+        <div class="mt-4">
+            <a href="{{ url_for('auth.stories') }}" class="btn btn-outline-primary me-2">View Stories</a>
+            <a href="{{ url_for('auth.books') }}" class="btn btn-outline-primary me-2">Browse Books</a>
+            {% if username %}
+                <a href="{{ url_for('auth.upload') }}" class="btn btn-outline-success">Upload Story</a>
+            {% else %}
+                <a href="{{ url_for('auth.login') }}" class="btn btn-outline-success">Log in to Upload</a>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

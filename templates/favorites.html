@@ -1,38 +1,43 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>My Favorites - Anecdotes</title>
-</head>
-<body>
-    <h1>My Favorites</h1>
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <ul>
-                {% for category, message in messages %}
-                    <li class="{{ category }}">{{ message }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
-    {% if favorites %}
-        <ul>
-            {% for favorite in favorites %}
-                {% if favorite.story %}
-                    <li>
-                        <h3>{{ favorite.story.title }} by {{ favorite.story.author.username }}</h3>
-                        <p>{{ favorite.story.content[:100] }}...</p>
-                        <a href="{{ url_for('auth.stories') }}">Back to Stories</a>
-                    </li>
-                {% else %}
-                    <li>
-                        <p>Story no longer available (ID: {{ favorite.story_id }})</p>
-                    </li>
-                {% endif %}
+{% extends "base.html" %}
+{% block title %}Favorites{% endblock %}
+{% block content %}
+    <div class="container">
+        <h2>Your Favorites</h2>
+        <h3>Stories</h3>
+        <ul class="list-group mb-4">
+            {% for story in story_favorites %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <a href="{{ url_for('auth.story', story_id=story.id) }}">{{ story.title }}</a>
+                        <span>by {{ story.author }}</span>
+                    </div>
+                    <form method="POST" action="{{ url_for('auth.favorite_story', story_id=story.id) }}" style="display:inline;">
+                        <button type="submit" class="btn btn-danger btn-sm">Unfavorite</button>
+                    </form>
+                </li>
+            {% else %}
+                <li class="list-group-item">No favorite stories.</li>
             {% endfor %}
         </ul>
-    {% else %}
-        <p>No favorite stories yet.</p>
-    {% endif %}
-    <p><a href="{{ url_for('auth.stories') }}">All Stories</a> | <a href="{{ url_for('auth.home') }}">Home</a></p>
-</body>
-</html>
+        <h3>Books</h3>
+        <div class="row">
+            {% for book in book_favorites %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <img src="{{ book.image_url }}" class="card-img-top" alt="{{ book.title }} cover" style="height: 200px; object-fit: cover;">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ book.title }}</h5>
+                            <p class="card-text">By {{ book.authors }}</p>
+                            <form method="POST" action="{{ url_for('auth.favorite_book', book_id=book.id) }}" style="display:inline;">
+                                <button type="submit" class="btn btn-danger btn-sm">Unfavorite</button>
+                            </form>
+                            <a href="{{ url_for('auth.book', book_id=book.id) }}" class="btn btn-primary btn-sm">Read</a>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <p>No favorite books.</p>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}
