@@ -4,6 +4,9 @@ from flask_login import LoginManager
 from flask_mail import Mail
 from app.schema import db, User  
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 login_manager = LoginManager()
 mail = Mail()
@@ -16,15 +19,15 @@ def create_app():
 
     app = Flask(__name__, template_folder=template_dir, instance_path=instance_dir, static_folder=static_dir)
 
-    app.config['SECRET_KEY'] = 'df950b388400d919d9b673c5b42605bd923fd3e0703dae13d0dbbef06c2522e8'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///anecdotes.db'
+    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'a-very-long-random-local-key')
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///anecdotes.db')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['MAIL_SERVER']='smtp-relay.brevo.com'
-    app.config['MAIL_PORT']='587'
-    app.config['MAIL_USE_TLS']=True
-    app.config['MAIL_USERNAME']='9677ac001@smtp-brevo.com'
-    app.config['MAIL_PASSWORD']='gaTtCXp64mNBQLq1'
-    app.config['MAIL_DEFAULT_SENDER']='aalwin.mathew.thomas@gmail.com'
+    app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp-relay.brevo.com')
+    app.config['MAIL_PORT'] = os.environ.get('MAIL_PORT', '587')
+    app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', True)  
+    app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME', '9677ac001@smtp-brevo.com')
+    app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')  # No fallback
+    app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER', 'aalwin.mathew.thomas@gmail.com')
 
 
 
