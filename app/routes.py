@@ -145,10 +145,16 @@ def reset_request():
         db.session.commit()
         print(f"OTP: {otp}, Expires: {user.otp_expires}")
         msg = Message('Password Reset OTP', recipients=[user.email], sender=current_app.config['MAIL_DEFAULT_SENDER'])
+        body_text = f"Your OTP for resetting your password is {otp}. It expires in 30 minutes."
+        print(f"Setting email body: {body_text}")  # Debug print
+        msg.body = body_text
         try:
+            print(f"Attempting to send email to {user.email}")
             mail.send(msg)
+            print(f"Email sent successfully to {user.email} with body: {body_text}")
             flash('OTP sent to your email.', 'success')
         except Exception as e:
+            print(f"Email failed: {str(e)}")
             flash(f'Email failed: {str(e)}. Check credentials or internet.', 'error')
             return redirect(url_for('auth.reset_request'))
         return redirect(url_for('auth.reset_password', username=username))
