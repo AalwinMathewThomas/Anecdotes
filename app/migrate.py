@@ -1,10 +1,9 @@
 from app import create_app, db
-from flask_migrate import Migrate
+from app.schema import User  # Adjust if your User model is in schema.py
 
 app = create_app()
-migrate = Migrate(app, db)
 
 with app.app_context():
-    # SQL to alter the password_hash column
-    db.engine.execute('ALTER TABLE "user" ALTER COLUMN password_hash TYPE VARCHAR(300);')
+    # Alter the password_hash column to VARCHAR(300)
+    db.engine.execute("ALTER TABLE \"user\" ALTER COLUMN password_hash TYPE VARCHAR(300);")
     print("Migration applied: Increased password_hash to 300.")
