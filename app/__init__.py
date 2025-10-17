@@ -20,7 +20,7 @@ def create_app():
     app = Flask(__name__, template_folder=template_dir, instance_path=instance_dir, static_folder=static_dir)
 
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'a-very-long-random-local-key')
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///anecdotes.db')
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///anecdotes.db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp-relay.brevo.com')
     app.config['MAIL_PORT'] = os.environ.get('MAIL_PORT', '587')
