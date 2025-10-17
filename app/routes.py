@@ -1,4 +1,4 @@
-from flask import Blueprint, app, render_template, request, redirect, url_for, flash
+from flask import Blueprint, app, current_app, render_template, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, login_required, current_user
 from app.schema import Like, Progress, db, User,Story,Favorite
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired
@@ -144,8 +144,7 @@ def reset_request():
         user.otp_expires = datetime.now(timezone.utc) + timedelta(minutes=30)
         db.session.commit()
         print(f"OTP: {otp}, Expires: {user.otp_expires}")
-        msg = Message('Password Reset OTP', recipients=[user.email], sender=app.config['MAIL_DEFAULT_SENDER'])
-        msg.body = f'Your OTP for resetting your password is {otp}. It expires in 30 minutes.'
+        msg = Message('Password Reset OTP', recipients=[user.email], sender=current_app.config['MAIL_DEFAULT_SENDER'])
         try:
             mail.send(msg)
             flash('OTP sent to your email.', 'success')
