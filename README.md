@@ -6,7 +6,7 @@ Purpose: A platform for users to register, upload stories, track reading progres
 Features: User authentication (login/logout, OTP password reset via Brevo SMTP), favorites, private story viewing, and responsive UI.
 Tech Stack: Flask, SQLAlchemy, PostgreSQL, Bootstrap 5, Jinja2, Flask-Login, Flask-Mail, Render, Git/GitHub.
 
-Live Demo: https://anecdotes-0vzl.onrender.com
+Live Demo: https://anecdotes-wgir.onrender.com
 
 1)Clone the repository:
 
