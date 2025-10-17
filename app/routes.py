@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, app, render_template, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, login_required, current_user
 from app.schema import Like, Progress, db, User,Story,Favorite
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired
@@ -131,25 +131,29 @@ def upload():
     return render_template('upload.html', username=current_user.username)
 
 
-@auth_bp.route("/reset_request",methods=["GET","POST"])
+@auth_bp.route('/reset_request', methods=['GET', 'POST'])
 def reset_request():
-    if request.method=="POST":
-        username = request.form.get("username")
+    if request.method == 'POST':
+        username = request.form.get('username')
         user = User.query.filter_by(username=username).first()
         if not user:
-            flash("No user found with that username.","error")
-            return redirect(url_for("auth.reset_request"))
-        otp=f"{random.randint(100000,999999)}"
-        user.otp=otp
+            flash('No user found with that username.', 'error')
+            return redirect(url_for('auth.reset_request'))
+        otp = str(random.randint(100000, 999999))
+        user.otp = otp
         user.otp_expires = datetime.now(timezone.utc) + timedelta(minutes=30)
         db.session.commit()
         print(f"OTP: {otp}, Expires: {user.otp_expires}")
-        msg = Message("Password Reset OTP", recipients=[user.email])
-        msg.body = f"Your OTP for resetting your password is {otp}. It expires in 10 minutes."
-        mail.send(msg)
-        flash("OTP sent to your email.", "success")
-        return redirect(url_for("auth.reset_password", username=username))
-    return render_template("reset_request.html")
+        msg = Message('Password Reset OTP', recipients=[user.email], sender=app.config['MAIL_DEFAULT_SENDER'])
+        msg.body = f'Your OTP for resetting your password is {otp}. It expires in 30 minutes.'
+        try:
+            mail.send(msg)
+            flash('OTP sent to your email.', 'success')
+        except Exception as e:
+            flash(f'Email failed: {str(e)}. Check credentials or internet.', 'error')
+            return redirect(url_for('auth.reset_request'))
+        return redirect(url_for('auth.reset_password', username=username))
+    return render_template('reset_request.html')
 
 
 @auth_bp.route('/reset_password/<username>', methods=['GET', 'POST'])

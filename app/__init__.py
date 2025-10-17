@@ -23,10 +23,10 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///anecdotes.db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp-relay.brevo.com')
-    app.config['MAIL_PORT'] = os.environ.get('MAIL_PORT', '587')
-    app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', True)  
+    app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', '587'))
+    app.config['MAIL_USE_TLS'] = bool(os.environ.get('MAIL_USE_TLS', 'True'))
     app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME', '9677ac001@smtp-brevo.com')
-    app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')  # No fallback
+    app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD', 'your-brevo-api-key')  # Add fallback
     app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER', 'aalwin.mathew.thomas@gmail.com')
 
 
