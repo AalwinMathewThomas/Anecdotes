@@ -3,7 +3,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 from app.schema import Like, Progress, db, User,Story,Favorite
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired
 from flask_mail import Mail, Message
-from datetime import datetime, timedelta,timezone
+from datetime import datetime, time, timedelta,timezone
 import random
 import requests
 import math
@@ -146,18 +146,26 @@ def reset_request():
         print(f"OTP: {otp}, Expires: {user.otp_expires}")
         msg = Message('Password Reset OTP', recipients=[user.email], sender=current_app.config['MAIL_DEFAULT_SENDER'])
         body_text = f"Your OTP for resetting your password is {otp}. It expires in 30 minutes."
-        print(f"Setting email body: {body_text}")  # Debug print
-        msg.body = body_text
+        print(f"Setting email body: {body_text}")
         try:
             print(f"Attempting to send email to {user.email}")
-            mail.send(msg)
-            print(f"Email sent successfully to {user.email} with body: {body_text}")
-            flash('OTP sent to your email.', 'success')
+            for attempt in range(3):  # Retry 3 times
+                try:
+                    mail.send(msg)
+                    print(f"Email sent successfully to {user.email} with body: {body_text}")
+                    flash('OTP sent to your email.', 'success')
+                    break
+                except Exception as e:
+                    print(f"Attempt {attempt + 1} failed: {str(e)}")
+                    if attempt == 2:  # Last attempt
+                        flash(f'Email failed after retries: {str(e)}. Check credentials or internet.', 'error')
+                        return redirect(url_for('auth.reset_request'))
+                    time.sleep(5)  # Wait 5 seconds before retry
+            return redirect(url_for('auth.reset_password', username=username))
         except Exception as e:
             print(f"Email failed: {str(e)}")
             flash(f'Email failed: {str(e)}. Check credentials or internet.', 'error')
             return redirect(url_for('auth.reset_request'))
-        return redirect(url_for('auth.reset_password', username=username))
     return render_template('reset_request.html')
 
 
